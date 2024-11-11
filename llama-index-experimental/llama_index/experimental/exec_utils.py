@@ -110,14 +110,15 @@ class DunderVisitor(ast.NodeVisitor):
 
 
 def _contains_protected_access(code: str) -> bool:
-    # do not allow imports
     imports_modules = False
     tree = ast.parse(code)
     for node in ast.iter_child_nodes(tree):
         if isinstance(node, ast.Import):
-            imports_modules = True
+            if any(name.name not in ALLOWED_IMPORTS for name in node.names):
+                imports_modules = True
         elif isinstance(node, ast.ImportFrom):
-            imports_modules = True
+            if node.module and node.module not in ALLOWED_IMPORTS:
+                imports_modules = True
         else:
             continue
 
